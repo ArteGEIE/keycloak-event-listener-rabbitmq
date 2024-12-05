@@ -5,7 +5,7 @@
     <groupId>com.github.aznamier.keycloak.event.provider</groupId>
     <artifactId>keycloak-to-rabbit</artifactId>
     <packaging>jar</packaging>
-	<version>3.0.5</version>
+	<version>3.0.6-SNAPSHOT</version>
     
 
 
@@ -22,10 +22,7 @@
 	     <url>https://maven.pkg.github.com/aznamier/keycloak-event-listener-rabbitmq</url>
 	   </repository>
 	</distributionManagement>
-	
-	
-	
-	
+
     <dependencies>
         <dependency>
             <groupId>org.keycloak</groupId>
@@ -69,7 +66,13 @@
 		<dependency>
 		    <groupId>com.rabbitmq</groupId>
 		    <artifactId>amqp-client</artifactId>
-		    <version>5.14.2</version>
+		    <version>5.23.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
 		</dependency>
         
     </dependencies>
@@ -107,14 +110,6 @@
 				  </execution>
 				</executions>
 			</plugin>
-			
-<!--            <plugin>-->
-<!--                <groupId>org.wildfly.plugins</groupId>-->
-<!--                <artifactId>wildfly-maven-plugin</artifactId>-->
-<!--                <configuration>-->
-<!--                    <skip>false</skip>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
         </plugins>
     </build>
 </project>
