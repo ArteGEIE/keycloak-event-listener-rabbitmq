@@ -5,7 +5,7 @@
     <groupId>com.github.aznamier.keycloak.event.provider</groupId>
     <artifactId>keycloak-to-rabbit</artifactId>
     <packaging>jar</packaging>
-	<version>3.0.6-SNAPSHOT</version>
+	<version>${revision}</version>
     
 
 
@@ -18,8 +18,8 @@
 	<distributionManagement>
 	   <repository>
 	     <id>github</id>
-	     <name>GitHub AZNAMIER Apache Maven Packages</name>
-	     <url>https://maven.pkg.github.com/aznamier/keycloak-event-listener-rabbitmq</url>
+	     <name>ArteGEIE GitHub Apache Maven Packages</name>
+	     <url>https://maven.pkg.github.com/artegeie/keycloak-event-listener-rabbitmq</url>
 	   </repository>
 	</distributionManagement>
 

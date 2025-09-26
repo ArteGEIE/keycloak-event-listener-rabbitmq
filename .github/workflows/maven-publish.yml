@@ -1,32 +1,56 @@
-# This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
-# For more information see: https://github.com/actions/setup-java#apache-maven-with-a-settings-path
-
-name: Maven Package
+name: Publish package to GitHub Packages
 
 on:
   release:
     types: [created]
 
 jobs:
-  build:
-
+  publish:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: read
+      packages: write
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: 17
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - uses: actions/checkout@v4
 
-    - name: Build with Maven
-      run: ./mvnw -B package --file pom.xml
+      - name: Setup xmllint
+        uses: Bpolitycki/setup-xmllint-action@1.0.1
 
-    - name: Publish to GitHub Packages Apache Maven
-      run: ./mvnw deploy -s $GITHUB_WORKSPACE/settings.xml
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
+      - name: Detect java version
+        id: java-version
+        run: |
+          [[ ! -f pom.xml ]] && { echo "No pom.xml found!" >&2; exit 1; }
+
+          # Read and normalize POM (remove xmlns to simplify XPath queries)
+          POM=$(xmllint --recover --format pom.xml \
+            | sed 's/xmlns="[^"]*"//')
+
+          # Try to get Java version from maven-compiler-plugin
+          VERSION=$(echo "$POM" \
+            | xmllint --xpath "string(//plugin[artifactId='maven-compiler-plugin']/configuration/source)" - 2>/dev/null)
+
+          # Fallback: use <maven.compiler.source> from <properties>
+          if [[ -z "$VERSION" ]]; then
+            VERSION=$(echo "$POM" \
+              | xmllint --xpath "string(//properties/maven.compiler.source)" - 2>/dev/null \
+              | sed 's/[^0-9]//g')
+          fi
+
+          if [[ "$VERSION" == "" ]]; then
+            echo "No Java version found in pom.xml, using fallback"
+            VERSION="21"
+          fi
+
+          echo "Detected Java version: $VERSION"
+
+          echo "java_version=$VERSION" >> $GITHUB_OUTPUT
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ steps.java-version.outputs.java_version }}
+          distribution: 'temurin'
+
+      - name: Publish package
+        run: mvn --batch-mode deploy -Drevision=${{ github.event.release.tag_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
